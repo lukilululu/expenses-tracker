@@ -1,0 +1,51 @@
+<% include partials/header %>
+
+<h1>this is expense page</h1>
+<h3>Hello, <%= currentUser.username %></h3>
+
+<% var total = 0;
+expenses.forEach(function(expense){ %>
+    <div>
+        <h3>
+            <%= expense.category %> : <%= expense.name %>  <%= "$" + expense.price %>
+        </h3>
+        <% total += expense.price %>
+    </div>
+<% }); %>
+
+<div>
+    <h3>
+        <%= "Total: $" + total %>
+    </h3>
+</div>
+<a href="/expenses/new">add a new expense</a>
+<div class="container">
+    <div class="row">
+        <div class="col-md-4 m-auto">
+            <form action="/upload" method="POST" enctype="multipart/form-data">
+                <div class="custom-file mb-3">
+                    <input type="file" name="file" id="file" class="custom-file-input">
+                    <label for="file" class="custom-file-label">Choose File</label>
+                </div>
+                <button class="btn btn-primary btn-block">Upload</button>
+            </form>
+            <hr>
+            <% if (files) { %>
+                <% files.forEach(function(file) { %>
+                    <div class="card card-body mb-3">
+                        <% if (file.isImage) { %>
+                            <img src="image/<%= file.filename %>" alt="what">
+                        <% } else { %>
+                            <%= file.filename %>
+                        <% } %>
+                    </div>
+                <% }) %>
+            <% } else { %>
+                <h2>No files to show</h2>
+            <% } %>
+        </div>
+    </div>
+</div>
+
+
+<% include partials/footer %>

@@ -1,0 +1,43 @@
+body{
+    margin: 0;
+    font: normal 16px Arial, Helvetica, sand-rif;
+    color: #333;
+  }
+
+  #login{
+    background: white;
+    opacity:0.7;
+    padding:2em;
+    border: #ccc 2px solid;
+    top: 25%;
+    left:42.5%;
+    position:absolute;
+    width: 265px;
+    height: 300px;
+  }
+  
+  #login input[type="text"], #login input[type="password"]{
+    padding: 7px;
+    margin-bottom: 15px;
+    border: #ccc 1px solid;
+  }
+  
+  /* #login input[type="submit"]{
+    display: block;
+    margin-right: auto;
+    margin-left: auto;
+  } */
+  
+  #particles-js{
+    background:white;
+    /* min-height: 100%;
+    min-width: 1024px;
+    width: 100%;
+    height: auto; */
+    /* height: 500px; */
+    height: 100%;
+    width: 100%;
+    position:absolute;
+    top:0;
+    left:0;
+  }

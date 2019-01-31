@@ -1,0 +1,18 @@
+<% include partials/header %>
+
+<h1>create a new expense</h1>
+<%= typeof msg != "undefined" ? msg : "" %>
+<form action="/expenses" method="POST">
+    <select name="category">
+      <option value="food">food</option>
+      <option value="drink">drink</option>
+      <option value="clothing">clothing</option>
+      <option value="travel">travel</option>
+    </select>
+    <input type="text" name="name" placeholder="epx-name">
+    <input type="text" name="price" placeholder="epx-price">
+    <input type="date" name="date">
+    <button>Submit</button>
+</form>
+<a href="/expenses">Go Back</a>
+<% include partials/footer %>
