@@ -50,16 +50,17 @@ router.get("/logout", function(req, res){
 // TODO: ocr handle
 router.post("/ocr", function(req, res){
     res.redirect("/login");
-    // const ocrApi = "ecf46b3ba088957",
-    //     ocrBaseUrl = "https://api.ocr.space/parse/imageurl?";
-    // var imgUrl = "http://i.imgur.com/fwxooMv.png";
-    // xhr.open("POST", ocrBaseUrl + "apikey=" + ocrApi + "url=" + imgUrl);  
-    // xhr.onreadystatechange = function() { 
-    //     if (xhr.readyState == 4 && xhr.status == 200) {
-    //         var ocrResult = xhr.responseText; 
-    //         console.log(ocrResult);
-    //     }
-    // };
+    const ocrApi = "ecf46b3ba088957",
+        ocrBaseUrl = "https://api.ocr.space/parse/imageurl?";
+    var imgUrl = "http://i.imgur.com/fwxooMv.png";
+    var xhr = new XMLHttpRequest();
+    xhr.open("POST", ocrBaseUrl + "apikey=" + ocrApi + "url=" + imgUrl, true);
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4 && xhr.status === 200) {
+            var ocrResult = xhr.responseText;
+            console.log(ocrResult);
+        }
+    };
 });
 
 // determine if user logged in, use this function in middleware of router function

@@ -6,6 +6,7 @@ var express = require("express"),
     localStrategy = require("passport-local"),
     Grid = require("gridfs-stream"),
     User = require("./models/user");
+    methodOverride = require("method-override");
     
 //require routes
 var expenseRoutes = require("./routes/expenseRoutes");
@@ -13,11 +14,15 @@ var indexRoutes = require("./routes/indexRoutes");
 
 //Set up default mongoose connection
 var mongoURL = "mongodb://luki:hcq19961224@ds155614.mlab.com:55614/expenses";
+
 mongoose.connect(mongoURL);
+
 // Get Mongoose to use the global promise library
 mongoose.Promise = global.Promise;
+
 //Get the default connection
 var db = mongoose.connection;
+
 //Bind connection to error event (to get notification of connection errors)
 db.on('error', console.error.bind(console, 'MongoDB connection error:'));
 
@@ -31,6 +36,7 @@ app.use(require("express-session")({
 }));
 app.use(passport.initialize());
 app.use(passport.session());
+app.use(methodOverride("_method"));
 passport.use(new localStrategy(User.authenticate()));
 passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());

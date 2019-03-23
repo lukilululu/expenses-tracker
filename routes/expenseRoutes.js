@@ -8,10 +8,12 @@ var path = require("path"),
     GridFsStorage = require("multer-gridfs-storage"),
     Grid = require("gridfs-stream"),
     methodOverride = require("method-override");
+var okrabyte = require("okrabyte");
 var request = require("request");
 var mongoURL = "mongodb://luki:hcq19961224@ds155614.mlab.com:55614/expenses";
 var conn = mongoose.createConnection(mongoURL);
 var gfs;
+var fs = require("fs");
 conn.once("open", function(){
     gfs = Grid(conn.db, mongoose.mongo);
     gfs.collection("uploads");
@@ -45,27 +47,6 @@ router.post("/upload", upload.single("file"), function(req, res) {
 
 //show all expenses for current user
 
-router.get("/result", function(req, res){
-    // console.log(req.params.filename);
-    gfs.files.find().toArray(function(err, files){
-        if (err) {
-            console.log(err);
-        }
-        if (!files || files.length === 0) {
-            res.render("expenses", {files: false});
-        }
-        files.map(file => {
-            console.log(file.filename);
-            request("https://api.ocr.space/parse/imageurl?apikey=5602c9d8b188957&file=" + 
-                file.filename + "&isTable=true", function(err, response, body){
-                if (!err && response.statusCode == 200) {
-                    res.send(body);
-                }
-            });
-        });
-    });
-});
-
 router.get("/image/:filename", function(req, res){
     gfs.files.findOne({filename: req.params.filename}, function(err, file) {
         if (!file || file.length === 0) {
@@ -79,6 +60,28 @@ router.get("/image/:filename", function(req, res){
                 err: "not an image"
             });
         }
+    });
+});
+
+router.get("/files", function(req, res){
+    gfs.files.find().toArray(function(err, files) {
+        //check if files
+        if (!files || files.length === 0) {
+            return res.status(404).json({
+                err: "no file"
+            })
+        }
+        return res.json(files);
+    });
+});
+
+router.get("/result", function(req, res){
+    // var buffer = fs.readFileSync("./public/image/reciept.jpg");
+    // okrabyte.decodeBuffer(buffer, function(error, data){
+    //     console.log(data);
+    // });
+    okrabyte.decodeFile("./public/image/reciept.jpg", function(error, data){
+        console.log(data); // Hello World!
     });
 });
 
@@ -98,15 +101,20 @@ router.get("/expenses", isLoggedIn, function(req, res){
                 res.render("expenses", {files: false});
             }
             files.map(file => {
-                if (file.contentType === "image/jpeg" || file.contentType === "image/png") {
-                    file.isImage = true;
-                } else {
-                    file.isImage = false;
-                }
+                file.isImage = file.contentType === "image/jpeg" || file.contentType === "image/png";
             });
             res.render("expenses", {expenses: allExpenses, currentUser: req.user, files: files});
         });
     });
+});
+
+router.delete("/files/:id", function(req, res) {
+    gfs.remove({_id: req.params.id, root: "uploads"}, function(err, gridStore){
+        if (err) {
+            return res.status(404).json({err: err});
+        }
+        res.redirect("/expenses");
+    })
 });
 
 router.post("/expenses", isLoggedIn, function(req, res){
