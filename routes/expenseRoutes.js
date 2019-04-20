@@ -14,6 +14,7 @@ var mongoURL = "mongodb://luki:hcq19961224@ds155614.mlab.com:55614/expenses";
 var conn = mongoose.createConnection(mongoURL);
 var gfs;
 var fs = require("fs");
+var Tesseract = require('tesseract.js');
 conn.once("open", function(){
     gfs = Grid(conn.db, mongoose.mongo);
     gfs.collection("uploads");
@@ -21,6 +22,7 @@ conn.once("open", function(){
 
 var storage = new GridFsStorage({
     url: mongoURL,
+    destination: "./public/image/",
     file: (req, file) => {
       return new Promise((resolve, reject) => {
         crypto.randomBytes(16, (err, buf) => {
@@ -40,8 +42,6 @@ var storage = new GridFsStorage({
 const upload = multer({ storage });
 // "file" is the name in input in form
 router.post("/upload", upload.single("file"), function(req, res) {
-    // return json file info
-    // res.json({file: req.file});
     res.redirect("expenses");
 });
 
@@ -75,14 +75,12 @@ router.get("/files", function(req, res){
     });
 });
 
-router.get("/result", function(req, res){
-    // var buffer = fs.readFileSync("./public/image/reciept.jpg");
-    // okrabyte.decodeBuffer(buffer, function(error, data){
-    //     console.log(data);
-    // });
-    okrabyte.decodeFile("./public/image/reciept.jpg", function(error, data){
-        console.log(data); // Hello World!
-    });
+router.get("/result", function(req, res) {
+    Tesseract.recognize("./public/image/reciept.jpg")
+        .then(function (result) {
+            console.log('result', result.text);
+        });
+    res.redirect("/expenses");
 });
 
 router.get("/expenses", isLoggedIn, function(req, res){
@@ -116,7 +114,6 @@ router.delete("/files/:id", function(req, res) {
         res.redirect("/expenses");
     })
 });
-
 router.post("/expenses", isLoggedIn, function(req, res){
     var newCategory = req.body.category;
     var newName = req.body.name;
