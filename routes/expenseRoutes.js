@@ -8,8 +8,6 @@ var path = require("path"),
     GridFsStorage = require("multer-gridfs-storage"),
     Grid = require("gridfs-stream"),
     methodOverride = require("method-override");
-var okrabyte = require("okrabyte");
-var request = require("request");
 var mongoURL = "mongodb://luki:hcq19961224@ds155614.mlab.com:55614/expenses";
 var conn = mongoose.createConnection(mongoURL);
 var gfs;
@@ -22,7 +20,6 @@ conn.once("open", function(){
 
 var storage = new GridFsStorage({
     url: mongoURL,
-    destination: "./public/image/",
     file: (req, file) => {
       return new Promise((resolve, reject) => {
         crypto.randomBytes(16, (err, buf) => {
