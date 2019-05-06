@@ -3,11 +3,11 @@
 <h1>create a new expense</h1>
 <%= typeof msg != "undefined" ? msg : "" %>
 <form action="/expenses" method="POST">
-    <select name="category">
-      <option value="food">food</option>
-      <option value="drink">drink</option>
-      <option value="clothing">clothing</option>
-      <option value="travel">travel</option>
+    <select name="category" style="display: block">
+      <option value="Entertainment">Entertainment</option>
+      <option value="FoodDinning">FoodDinning</option>
+      <option value="Shopping">Shopping</option>
+      <option value="PersonalCare">PersonalCare</option>
     </select>
     <input type="text" name="name" placeholder="epx-name">
     <input type="text" name="price" placeholder="epx-price">

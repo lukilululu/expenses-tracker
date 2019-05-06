@@ -1,22 +1,22 @@
 {
   "particles": {
     "number":{
-      "value": 300
+      "value": 50
     },
     "color":{
-      "value": "#4c596d"
+      "value": "#FFFD00"
     },
     "shape":{
       "type": "circle"
     },
     "opacity":{
-      "value": 0.8,
+      "value": 0.9,
       "anim":{
         "enable": true
       }
     },
     "size":{
-      "value": 7,
+      "value": 5,
       "anim":{
         "enable": true
       }
@@ -24,6 +24,9 @@
     "move":{
       "enable": true,
       "speed": 1
+    },
+    "line_linked": {
+      "enable": false
     },
     "interactivity":{
       "events":{

@@ -3,114 +3,56 @@ var express = require("express"),
     Expenses = require("../models/expenses");
 var path = require("path"),
     mongoose = require("mongoose"),
-    crypto = require("crypto"),
-    multer = require("multer"),
-    GridFsStorage = require("multer-gridfs-storage"),
-    Grid = require("gridfs-stream"),
-    methodOverride = require("method-override");
+    multer = require("multer");
 var mongoURL = "mongodb://luki:hcq19961224@ds155614.mlab.com:55614/expenses";
-var conn = mongoose.createConnection(mongoURL);
-var gfs;
+mongoose.createConnection(mongoURL, {useNewUrlParser: true});
 var fs = require("fs");
 var Tesseract = require('tesseract.js');
-conn.once("open", function(){
-    gfs = Grid(conn.db, mongoose.mongo);
-    gfs.collection("uploads");
-});
-
-var storage = new GridFsStorage({
-    url: mongoURL,
-    file: (req, file) => {
-      return new Promise((resolve, reject) => {
-        crypto.randomBytes(16, (err, buf) => {
-          if (err) {
-            return reject(err);
-          }
-          const filename = buf.toString('hex') + path.extname(file.originalname);
-          const fileInfo = {
-            filename: filename,
-            bucketName: 'uploads'
-          };
-          resolve(fileInfo);
-        });
-      });
+var text, list;
+var diskStorage = multer.diskStorage({
+    destination: "./public/image/",
+    filename: function(req, file, cb){
+        cb(null, file.fieldname + "_" + Date.now() + path.extname(file.originalname));
     }
-  });
-const upload = multer({ storage });
+});
+// const diskUpload = multer({des: diskStorage});
+const upload = multer({storage: diskStorage});
 // "file" is the name in input in form
-router.post("/upload", upload.single("file"), function(req, res) {
-    res.redirect("expenses");
+router.post("/upload", upload.single("file"),function(req, res) {
+    list = req.body.cateList;
+    fs.readdir("./public/image/", function(err, files) {
+        if (err) {
+            console.log(err);
+        } else {
+            Tesseract.recognize("./public/image/" + files[files.length - 1])
+                .then(function(result){
+                    text = result.text;
+                    console.log('result', result.text);
+                });
+            for (var file of files) {
+                fs.unlinkSync("./public/image/" + file, function(err){
+                    if (err) {
+                       console.log(err);
+                    }
+                });
+            }
+        }
+    });
 });
 
 //show all expenses for current user
 
-router.get("/image/:filename", function(req, res){
-    gfs.files.findOne({filename: req.params.filename}, function(err, file) {
-        if (!file || file.length === 0) {
-            return res.status(404).json({err: "no file"});
-        }
-        if (file.contentType === "image/jpeg" || file.contentType === "image/png") {
-            const readstream = gfs.createReadStream(file.filename);
-            readstream.pipe(res);
-        } else {
-            res.status(404).json({
-                err: "not an image"
-            });
-        }
-    });
-});
-
-router.get("/files", function(req, res){
-    gfs.files.find().toArray(function(err, files) {
-        //check if files
-        if (!files || files.length === 0) {
-            return res.status(404).json({
-                err: "no file"
-            })
-        }
-        return res.json(files);
-    });
-});
-
-router.get("/result", function(req, res) {
-    Tesseract.recognize("./public/image/reciept.jpg")
-        .then(function (result) {
-            console.log('result', result.text);
-        });
-    res.redirect("/expenses");
-});
-
 router.get("/expenses", isLoggedIn, function(req, res){
-    console.log("username is ??");
-    console.log("username is "+ req.user.username);
-    Expenses.find({"cuser.id": req.user._id}, function(err, allExpenses){
+    Expenses.find({"cuser.id": req.user._id}, function(err, allExpenses) {
         if (err) {
             console.log(err);
         }
-        gfs.files.find().toArray(function(err, files){
-            //check if files
-            if (err) {
-                console.log(err);
-            }
-            if (!files || files.length === 0) {
-                res.render("expenses", {files: false});
-            }
-            files.map(file => {
-                file.isImage = file.contentType === "image/jpeg" || file.contentType === "image/png";
-            });
-            res.render("expenses", {expenses: allExpenses, currentUser: req.user, files: files});
-        });
+        var today = new Date();
+        var time = today.getHours();
+        res.render("expenses", {expenses: allExpenses, currentUser: req.user, time: time});
     });
 });
 
-router.delete("/files/:id", function(req, res) {
-    gfs.remove({_id: req.params.id, root: "uploads"}, function(err, gridStore){
-        if (err) {
-            return res.status(404).json({err: err});
-        }
-        res.redirect("/expenses");
-    })
-});
 router.post("/expenses", isLoggedIn, function(req, res){
     var newCategory = req.body.category;
     var newName = req.body.name;
@@ -120,25 +62,68 @@ router.post("/expenses", isLoggedIn, function(req, res){
           id: req.user._id,
           username: req.user.username
     };
-    if (newCategory !== null && newName !== null && newDate !== null && newPrice !== null) {
-        var newExpense = {category:newCategory, name:newName, price:newPrice, date:newDate, cuser: cuser};
-        console.log(req.user._id);
-        console.log(req.user.username);
-        // newExpense.users.id = req.user._id;
-        Expenses.create(newExpense, function(err, newlyCreatedExpense){
-            if (err) {
-                console.log(err);
-            } else {
-                console.log("hello" + newlyCreatedExpense);
-                res.redirect("/expenses");     
-            }
-        });
-    } else {
-        // var errMsg = document.getElementsByTagName("h3");
-        var msg = "cannot leave with blanks";
-        res.render("new", {msg: msg});
-        // console.log("cannot leave with blanks");
+    if (newName !== undefined && newCategory !== undefined && newDate !== undefined && newPrice !== undefined) {
+        if (newName !== "" && newDate !== "" && newPrice !== null) {
+            var newExpense = {category: newCategory, name: newName, price: newPrice, date: newDate, cuser: cuser};
+            Expenses.create(newExpense, function (err, newlyCreatedExpense) {
+                if (err) {
+                    console.log(err);
+                } else {
+                    res.redirect("/expenses");
+                }
+            });
+        } else {
+            var msg = "cannot leave with blanks";
+            res.render("new", {msg: msg});
+        }
     }
+    var receiptExpense = {category: ""};
+    console.log("list",list);
+    if (list === "Entertainment") {
+        receiptExpense.category = "Entertainment";
+        receiptExpense = {...receiptExpense, ...parseText(req.body.Entertainment)};
+        receiptExpense.cuser = cuser;
+        Expenses.create(receiptExpense);
+    }
+    if (list === "FoodDinning") {
+        receiptExpense.category = "FoodDinning";
+        receiptExpense = {...receiptExpense, ...parseText(req.body.FoodDinning)};
+        receiptExpense.cuser = cuser;
+        Expenses.create(receiptExpense);
+    }
+    if (list === "Shopping") {
+        receiptExpense.category = "Shopping";
+        receiptExpense = {...receiptExpense, ...parseText(req.body.Shopping)};
+        receiptExpense.cuser = cuser;
+        Expenses.create(receiptExpense);
+    }
+    if (list === "PersonalCare") {
+        receiptExpense.category = "PersonalCare";
+        receiptExpense = {...receiptExpense, ...parseText(req.body.PersonalCare)};
+        receiptExpense.cuser = cuser;
+        Expenses.create(receiptExpense);
+    }
+    res.redirect("/expenses");
+});
+
+
+function parseText(store){
+    var expense;
+    if (store === "Cineplex") {
+        expense = {name: "ABC", price: 12.5, date: "2019-05-01"};
+    }
+    console.log("expense",expense);
+    return expense;
+}
+
+router.delete("/expenses/:id", function(req, res) {
+    console.log(req.params.id);
+    Expenses.findByIdAndRemove(req.params.id, function(err){
+        if (err) {
+            console.log(err);
+        }
+    });
+    res.redirect("/expenses");
 });
 
 router.get("/expenses/new", isLoggedIn, function(req, res){
@@ -152,5 +137,6 @@ function isLoggedIn(req, res, next){
     }
     res.redirect("/login");
 }
+
 
 module.exports = router;

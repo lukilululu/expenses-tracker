@@ -6,7 +6,7 @@ body{
 
   #login{
     background: white;
-    opacity:0.7;
+    opacity:0.9;
     padding:2em;
     border: #ccc 2px solid;
     top: 25%;
@@ -27,9 +27,17 @@ body{
     margin-right: auto;
     margin-left: auto;
   } */
+
+  .wrapper{
+    margin-left: 10%;
+    margin-right: 10%;
+    width: 600px;
+    height: 990px;
+  }
+
   
   #particles-js{
-    background:white;
+    background: #141510;
     /* min-height: 100%;
     min-width: 1024px;
     width: 100%;

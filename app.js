@@ -3,9 +3,9 @@ var express = require("express"),
     mongoose = require("mongoose"),
     app = express(),
     passport = require("passport"),
-    localStrategy = require("passport-local"),
+    LocalStrategy = require("passport-local"),
     Grid = require("gridfs-stream"),
-    User = require("./models/user");
+    User = require("./models/user"),
     methodOverride = require("method-override");
     
 //require routes
@@ -37,7 +37,7 @@ app.use(require("express-session")({
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(methodOverride("_method"));
-passport.use(new localStrategy(User.authenticate()));
+passport.use(new LocalStrategy(User.authenticate()));
 passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
 

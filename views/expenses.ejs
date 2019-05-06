@@ -1,54 +1,121 @@
-<% include partials/header %>
+ <% include partials/header %>
 
-<h1>this is expense page</h1>
-<h3>Hello, <%= currentUser.username %></h3>
+ <% if(time >= 5 && time < 12){ %>
+     <h1>Good Morning, <%= currentUser.username %></h1>
+ <% } if (time >= 12 && time < 17) { %>
+     <h1>Good Afternoon, <%= currentUser.username %></h1>
+ <% } if (time >= 17 && time < 24) {%>
+     <h1>Good Evening, <%= currentUser.username %></h1>
+ <%}%>
 
-<% var total = 0;
-expenses.forEach(function(expense){ %>
-    <div>
-        <h3>
-            <%= expense.category %> : <%= expense.name %>  <%= "$" + expense.price %>
-        </h3>
-        <% total += expense.price %>
-    </div>
-<% }); %>
+<div class="wrapper">
+    <table id="myDataTable1" class="mdl-data-table" width="500">
+        <thead>
+        <tr>
+            <th>Category</th>
+            <th>Name</th>
+            <th>Price$</th>
+            <th>Date</th>
+            <th>Edit</th>
+        </tr>
+        </thead>
+        <tbody>
+        <% expenses.forEach(function(expense){ %>
+            <tr>
+                <td> <%= expense.category %> </td>
+                <td> <%= expense.name %> </td>
+                <td> <%= expense.price %> </td>
+                <td> <%= expense.date %> </td>
+                <td>
+                    <form method="POST" action="/expenses/<%= expense._id %>?_method=DELETE" >
+                        <button>delete</button>
+                    </form>
+                </td>
+            </tr>
+        <% }); %>
+        </tbody>
+        <tfoot>
+        <tr>
+            <th>Category</th>
+            <th>Name</th>
+            <th>Price</th>
+            <th>Date</th>
+            <th>Edit</th>
+        </tr>
+        </tfoot>
+    </table>
+    <button><a href="/expenses/new">add a new expense</a></button>
 
-<div>
-    <h3>
-        <%= "Total: $" + total %>
-    </h3>
-</div>
-<a href="/expenses/new">add a new expense</a>
-<div class="container">
-    <div class="row">
-        <div class="col-md-4 m-auto">
-            <form action="/upload" method="POST" enctype="multipart/form-data">
-                <div class="custom-file mb-3">
-                    <input type="file" name="file" id="file" class="custom-file-input">
-                    <label for="file" class="custom-file-label">Choose File</label>
-                </div>
-                <button class="btn btn-primary btn-block">Upload</button>
-            </form>
-            <hr>
-            <% if (files) { %>
-                <% files.forEach(function(file) { %>
-                    <div class="card card-body mb-3">
-                        <% if (file.isImage) { %>
-                            <img src="image/<%= file.filename %>" alt="what">
-                        <% } else { %>
-                            <%= file.filename %>
-                        <% } %>
-                        <form method="POST" action="/files/<%= file._id %>?_method=DELETE" >
-                            <button class="btn btn-danger btn-block mt-4">Delete</button>
-                        </form>
-                    </div>
-                <% }) %>
-            <% } else { %>
-                <h2>No files to show</h2>
-            <% } %>
+    <form action="/upload" method="POST" enctype="multipart/form-data">
+        <div>
+            <select id="category" style="display: block" name="cateList">
+                <option value="Entertainment">Entertainment</option>
+                <option value="Food&Dinning">Food&Dinning</option>
+                <option value="Shopping">Shopping</option>
+                <option value="PersonalCare">PersonalCare</option>
+            </select>
         </div>
-    </div>
-</div>
+        <div class="custom-file mb-3">
+            <input type="file" name="file" id="file" class="custom-file-input">
+            <label for="file" class="custom-file-label">Choose Receipt</label>
+        </div>
+        <button class="btn btn-primary btn-block" id="show" onclick="showList()">Upload</button>
+    </form>
+    <form action="/expenses" method="POST">
+        <div id="EntertainmentList" style="display: none;">
+            <span>Entertainment:</span> <br>
+            <select name="Entertainment" style="display: block" id="Entertainment">
+                <option value="Cineplex">Cineplex</option>
+                <option value="iTunes">iTunes</option>
+            </select>
+        </div>
+        <div id="FoodDinningList" style="display: none;">
+            <span>Food&Dinning:</span> <br>
+            <select name="FoodDinning" style="display: block" id="FoodDinning">
+                <option value="Starbucks">Starbucks</option>
+                <option value="Safeway">Safeway</option>
+                <option value="Saveonfood">Saveonfood</option>
+            </select>
+        </div>
+        <div id="ShoppingList" style="display: none;">
+            Shopping: <br>
+            <select name="Shopping" style="display: block" id="Shopping">
+                <option value="HM">HM</option>
+                <option value="Footlocker">Footlocker</option>
+            </select>
+        </div>
+        <div id="PersonalCare" style="display: none;">
+            PersonalCare: <br>
+            <select name="PersonalCare" style="display: block" id="PersonalCare">
+                <option value="SteveNash">SteveNash</option>
+                <option value="Goodlife">Goodlife</option>
+            </select>
+        </div>
+        <button>Generate Expense From Receipt</button>
+    </form>
+    <script>
+        function showList(){
+            var cate = document.getElementById("category");
+            var value = cate[cate.selectedIndex].value;
+            if (value === "Entertainment") {
+                var list = document.getElementById("EntertainmentList");
+                list.style.display = "block";
+            }
+            if (value === "FoodDinning") {
+                var list = document.getElementById("FoodDinningList");
+                list.style.display = "block";
+            }
+            if (value === "Shopping") {
+                var list = document.getElementById("ShoppingList");
+                list.style.display = "block";
+            }
+            if (value === "PersonalCare") {
+                var list = document.getElementById("PersonalCareList");
+                list.style.display = "block";
+            }
+        }
+    </script>
 
+</div>
 
 <% include partials/footer %>
