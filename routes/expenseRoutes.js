@@ -17,8 +17,7 @@ var diskStorage = multer.diskStorage({
 });
 // const diskUpload = multer({des: diskStorage});
 const upload = multer({storage: diskStorage});
-// "file" is the name in input in form
-router.post("/upload", upload.single("file"),function(req, res) {
+router.post("/upload", upload.single("file"),function(req) {
     list = req.body.cateList;
     fs.readdir("./public/image/", function(err, files) {
         if (err) {
@@ -65,43 +64,42 @@ router.post("/expenses", isLoggedIn, function(req, res){
     if (newName !== undefined && newCategory !== undefined && newDate !== undefined && newPrice !== undefined) {
         if (newName !== "" && newDate !== "" && newPrice !== null) {
             var newExpense = {category: newCategory, name: newName, price: newPrice, date: newDate, cuser: cuser};
-            Expenses.create(newExpense, function (err, newlyCreatedExpense) {
+            Expenses.create(newExpense, function (err) {
                 if (err) {
                     console.log(err);
-                } else {
-                    res.redirect("/expenses");
                 }
             });
         } else {
             var msg = "cannot leave with blanks";
             res.render("new", {msg: msg});
         }
-    }
-    var receiptExpense = {category: ""};
-    console.log("list",list);
-    if (list === "Entertainment") {
-        receiptExpense.category = "Entertainment";
-        receiptExpense = {...receiptExpense, ...parseText(req.body.Entertainment)};
-        receiptExpense.cuser = cuser;
-        Expenses.create(receiptExpense);
-    }
-    if (list === "FoodDinning") {
-        receiptExpense.category = "FoodDinning";
-        receiptExpense = {...receiptExpense, ...parseText(req.body.FoodDinning)};
-        receiptExpense.cuser = cuser;
-        Expenses.create(receiptExpense);
-    }
-    if (list === "Shopping") {
-        receiptExpense.category = "Shopping";
-        receiptExpense = {...receiptExpense, ...parseText(req.body.Shopping)};
-        receiptExpense.cuser = cuser;
-        Expenses.create(receiptExpense);
-    }
-    if (list === "PersonalCare") {
-        receiptExpense.category = "PersonalCare";
-        receiptExpense = {...receiptExpense, ...parseText(req.body.PersonalCare)};
-        receiptExpense.cuser = cuser;
-        Expenses.create(receiptExpense);
+    } else {
+        var receiptExpense = {category: ""};
+        console.log("list", list);
+        if (list === "Entertainment") {
+            receiptExpense.category = "Entertainment";
+            receiptExpense = {...receiptExpense, ...parseText(req.body.Entertainment)};
+            receiptExpense.cuser = cuser;
+            Expenses.create(receiptExpense);
+        }
+        if (list === "FoodDinning") {
+            receiptExpense.category = "FoodDinning";
+            receiptExpense = {...receiptExpense, ...parseText(req.body.FoodDinning)};
+            receiptExpense.cuser = cuser;
+            Expenses.create(receiptExpense);
+        }
+        if (list === "Shopping") {
+            receiptExpense.category = "Shopping";
+            receiptExpense = {...receiptExpense, ...parseText(req.body.Shopping)};
+            receiptExpense.cuser = cuser;
+            Expenses.create(receiptExpense);
+        }
+        if (list === "PersonalCare") {
+            receiptExpense.category = "PersonalCare";
+            receiptExpense = {...receiptExpense, ...parseText(req.body.PersonalCare)};
+            receiptExpense.cuser = cuser;
+            Expenses.create(receiptExpense);
+        }
     }
     res.redirect("/expenses");
 });
